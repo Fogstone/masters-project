@@ -1,0 +1,18 @@
+Metadata-Version: 2.2
+Name: CybORG
+Version: 3.1
+Summary: A Cyber Security Research Environment
+Requires-Dist: pytest
+Requires-Dist: pyyaml
+Requires-Dist: numpy
+Requires-Dist: gym==0.23.1
+Requires-Dist: prettytable
+Requires-Dist: docutils
+Requires-Dist: pettingzoo
+Requires-Dist: networkx
+Requires-Dist: matplotlib
+Requires-Dist: paramiko
+Requires-Dist: pygame
+Requires-Dist: torch
+Dynamic: requires-dist
+Dynamic: summary
