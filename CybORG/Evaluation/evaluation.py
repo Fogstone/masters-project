@@ -25,10 +25,10 @@ def run_evaluation(name, team, name_of_agent, max_eps, write_to_file=True):
             0.002,
             [0.9, 0.990],
             0.99,
-            4,
-            0.2,
+            1,
+            0.5,
             True,
-            "CybORG/Evaluation/submission/Models/5110.pth",
+            "CybORG/Evaluation/submission/Models/12829.pth",
         )
         for agent in range(18)
     }

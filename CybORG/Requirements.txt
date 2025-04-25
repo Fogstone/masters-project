@@ -1,3 +1,5 @@
+bayesian-optimization
+bayes_opt
 pytest
 pyyaml
 numpy

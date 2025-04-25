@@ -10,7 +10,7 @@ from datetime import datetime
 from CybORG.Agents.Wrappers import PettingZooParallelWrapper
 from CybORG.Evaluation.evaluation2 import run_evaluation
 
-# from Evaluation.emu_agents import AgentPPO, AgentRDQN, AgentPPOSEQ
+from Evaluation.emu_agents import AgentPPO, AgentRDQN, AgentPPOSEQ
 from Evaluation.emu_agents.ppo import AgentPPO
 from Evaluation.emu_agents.rdqn import AgentRDQN
 from Evaluation.emu_agents.ppo_rnn import AgentPPOSEQ

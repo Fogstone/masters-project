@@ -7,7 +7,8 @@ from CybORG.Simulator.Scenarios import DroneSwarmScenarioGenerator
 
 from datetime import datetime
 from CybORG.Agents.Wrappers import PettingZooParallelWrapper
-from CybORG.Agents.DDQN import AgentDDQN
+
+# from CybORG.Agents.DDQN import AgentDDQN
 from CybORG.Agents.PPO.PPO import PPO
 import numpy as np
 import os
@@ -161,7 +162,7 @@ def run_training(name, team, name_of_agent, max_eps, write_to_file=False):
                 4,
                 0.2,
                 True,
-                "CybORG\Evaluation\submission\Models\\5110.pth",
+                "/cage/CybORG/Evaluation/submission/Models/5110.pth",
             )
             for agent in range(18)
         }
