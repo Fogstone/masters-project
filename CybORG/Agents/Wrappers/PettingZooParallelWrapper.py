@@ -52,13 +52,16 @@ class PettingZooParallelWrapper(BaseWrapper):
 
         for agent, act in actions.items():
             assert self.action_space(agent).contains(act)
+            # Handle out-of-range actions by defaulting to Sleep (index 0)
+            if act not in self.agent_actions[agent]:
+                print(f"WARNING: Agent {agent} attempted action {act} which is out of bounds. Defaulting to Sleep.")
+                act = 0  # Default to Sleep action
             actions_dict[agent] = self.agent_actions[agent][act]
 
         raw_obs, rews, dones, infos = self.env.parallel_step(actions_dict, messages=msgs)
         # green_agents = {agent: if }
         # rews = GreenAvailabilityRewardCalculator(raw_obs, ['green_agent_0','green_agent_1', 'green_agent_2' ]).calculate_reward()
         obs = {agent: self.observation_change(agent, raw_agent_obs) for agent, raw_agent_obs in raw_obs.items()}
-        # obs = {agent: self.observation_change(agent, obs) for agent in self.possible_agents}
         # set done to true if maximumum steps are reached
         self.dones.update(dones)
         self.rewards = {agent: float(sum(agent_rew.values())) for agent, agent_rew in rews.items()}
@@ -164,7 +167,6 @@ class PettingZooParallelWrapper(BaseWrapper):
     def int_to_cyborg_action(self):
         '''
         Returns a dictionary containing dictionaries that maps the number selected by the agent to a specific CybORG action
-
         '''
         cyborg_agent_actions = {}
         for agent in self.active_agents:
@@ -174,12 +176,18 @@ class PettingZooParallelWrapper(BaseWrapper):
                 params_dict = {}
                 if action.__name__ == 'Sleep':
                     cyborg_action_to_int[act_count] = Sleep()
-                    act_count+=1
+                    act_count += 1
                 elif action.__name__ == 'RemoveOtherSessions':
                     params_dict['agent'] = agent
                     params_dict['session'] = 0
                     cyborg_action_to_int[act_count] = action(**params_dict)
-                    act_count+=1
+                    act_count += 1
+                elif action.__name__ == 'PatchVulnerability':
+                    # PatchVulnerability doesn't need an IP address, only session and agent
+                    params_dict['agent'] = agent
+                    params_dict['session'] = 0
+                    cyborg_action_to_int[act_count] = action(**params_dict)
+                    act_count += 1
                 else:
                     for ip in self.env.get_action_space(self.active_agents[0])['ip_address'].keys():
                         for sess in self.env.get_action_space(self.active_agents[0])['session'].keys():
@@ -188,10 +196,10 @@ class PettingZooParallelWrapper(BaseWrapper):
                                 params_dict['ip_address'] = ip
                                 params_dict['agent'] = agent
                                 cyborg_action_to_int[act_count] = action(**params_dict)
-                                act_count+=1
+                                act_count += 1
             cyborg_agent_actions[agent] = cyborg_action_to_int
         return cyborg_agent_actions
-    
+
     def get_action_space(self, agent):
         '''
         Obtains the action_space of the specified agent
@@ -294,6 +302,12 @@ class PettingZooParallelWrapper(BaseWrapper):
                                 new_obs[index + 1] = 0
                                 new_obs[index + 2] = 0
                                 index += 3
+
+                    # Add information about patched vulnerabilities
+                    if own_host_name in obs and 'patched_vulnerabilities' in obs[own_host_name]:
+                        # You would need to extend the observation space to include this information
+                        # For now, we're just acknowledging it should be included
+                        pass
 
                     msg = self.parse_message(obs['message'] if 'message' in obs else [], agent)
                     if len(msg) > 0:

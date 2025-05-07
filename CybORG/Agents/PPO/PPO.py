@@ -29,10 +29,28 @@ class PPO:
         self.memory = Memory()
         self.policy = ActorCritic(state_dim, action_dim).to(device)
         if restore:
-            pretrained_model = torch.load(
-                ckpt, map_location=lambda storage, loc: storage
-            )
-            self.policy.load_state_dict(pretrained_model)
+            try:
+                pretrained_model = torch.load(
+                    ckpt, map_location=lambda storage, loc: storage
+                )
+                
+                # Manually load the state dict to handle shape mismatches
+                own_state_dict = self.policy.state_dict()
+                
+                for key, param in pretrained_model.items():
+                    if key in own_state_dict:
+                        if param.shape == own_state_dict[key].shape:
+                            own_state_dict[key].copy_(param)
+                        else:
+                            print(f"Skipping {key} due to shape mismatch: {param.shape} vs {own_state_dict[key].shape}")
+                
+                # The rest of the parameters will keep their default random initialization
+                print(f"Loaded pretrained model with compatible weights")
+                
+            except Exception as e:
+                print(f"Error loading model: {e}")
+                print("Using random initialization")
+        
         self.optimizer = torch.optim.Adam(self.policy.parameters(), lr=lr, betas=betas)
         self.old_policy = ActorCritic(state_dim, action_dim).to(device)
         self.old_policy.load_state_dict(self.policy.state_dict())

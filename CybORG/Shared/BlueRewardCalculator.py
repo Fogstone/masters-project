@@ -15,13 +15,32 @@ class ConfidentialityRewardCalculator(RewardCalculator):
         super(ConfidentialityRewardCalculator, self).__init__(team_name)
         self.infiltrate_rc = PwnRewardCalculator(self.adversary, scenario)
         self.compromised_hosts = {}
+        self.patched_hosts = {}
 
     def reset(self):
         self.infiltrate_rc.reset()
+        self.patched_hosts = {}
 
     def calculate_reward(self, current_state: dict, action: dict, agent_observations: dict, done: bool) -> float:
         self.compromised_hosts = {}
+        self.patched_hosts = {}
         reward = -self.infiltrate_rc.calculate_reward(current_state, action, agent_observations, done)
+        
+        # Calculate additional reward for patching vulnerabilities
+        for hostname, host_info in current_state.items():
+            if hostname == 'success':
+                continue
+                
+            # Check if the host has patched vulnerabilities
+            if 'patched_vulnerabilities' in host_info and 'drone_comms_8888' in host_info['patched_vulnerabilities']:
+                # Reward is based on the same confidentiality value used for compromising
+                if hostname not in self.patched_hosts:
+                    value = self.scenario.get_host(hostname).get_confidentiality_value('Low')
+                    mapping = {'None': 0.0, 'Low': 0.5, 'Medium': 2.0, 'High': 5.0}
+                    patch_reward = mapping[value]
+                    self.patched_hosts[hostname] = patch_reward
+                    reward += patch_reward
+        
         self._calculate_compromised_hosts()
         return reward
 
@@ -72,11 +91,15 @@ class HybridAvailabilityConfidentialityRewardCalculator(RewardCalculator):
         self.host_scores = {}
         compromised_hosts = self.confidentiality_calculator.compromised_hosts
         impacted_hosts = self.availability_calculator.impacted_hosts
+        patched_hosts = getattr(self.confidentiality_calculator, 'patched_hosts', {})
+        
         for host in hostnames:
             if host == 'success':
                 continue
             compromised = compromised_hosts[host] if host in compromised_hosts else 0
             impacted = impacted_hosts[host] if host in impacted_hosts else 0
-            reward_state = HostReward(compromised,impacted)  
-                                    # confidentiality, availability
+            patched = patched_hosts[host] if host in patched_hosts else 0
+            
+            # Include patching in the reward calculation
+            reward_state = HostReward(compromised + patched, impacted)
             self.host_scores[host] = reward_state

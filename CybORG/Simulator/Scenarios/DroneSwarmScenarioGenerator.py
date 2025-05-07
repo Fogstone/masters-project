@@ -18,6 +18,7 @@ from CybORG.Simulator.Actions.ConcreteActions.ExploitActions.RetakeControl impor
 from CybORG.Simulator.Actions.ConcreteActions.FloodBandwidth import FloodBandwidth
 from CybORG.Simulator.Actions.ConcreteActions.GetDroneSwarmData import GetDroneSwarmData
 from CybORG.Simulator.Actions.ConcreteActions.RemoveOtherSessions import RemoveOtherSessions
+from CybORG.Simulator.Actions.ConcreteActions.DefensiveActions.PatchVulnerability import PatchVulnerability
 from CybORG.Simulator.Actions.GreenActions.SendData import SendData
 from CybORG.Shared.CommsRewardCalculator import CommsAvailabilityRewardCalculator, CompleteCompromiseRewardCalculator
 from CybORG.Shared.Scenario import ScenarioHost, ScenarioSubnet, ScenarioAgent, ScenarioSession
@@ -66,7 +67,7 @@ class DroneSwarmScenarioGenerator(ScenarioGenerator):
         scenario = Scenario()
 
         red_actions = [ExploitDroneVulnerability, SeizeControl, FloodBandwidth, BlockTraffic, AllowTraffic, Sleep]
-        blue_actions = [RetakeControl, RemoveOtherSessions, BlockTraffic, AllowTraffic, Sleep]
+        blue_actions = [RetakeControl, RemoveOtherSessions, BlockTraffic, AllowTraffic, PatchVulnerability, Sleep]
         green_actions = [SendData, Sleep]
 
         blue_event_artifacts = []
